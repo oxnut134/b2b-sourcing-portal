@@ -22,24 +22,29 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, credentials.email))
-          .limit(1);
+        try {
+          const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, credentials.email))
+            .limit(1);
 
-        if (!user || !user.password) return null;
+          if (!user || !user.password) return null;
 
-        const isValid = await compare(credentials.password, user.password);
-        if (!isValid) return null;
+          const isValid = await compare(credentials.password, user.password);
+          if (!isValid) return null;
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          company: user.company,
-        };
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            company: user.company,
+          };
+        } catch (err) {
+          console.error("authorize error:", err);
+          return null;
+        }
       },
     }),
   ],
